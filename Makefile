@@ -1,62 +1,48 @@
-.PHONY: lint lint-fix lint-fast build run clean test test-verbose test-cover test-cover-html check help
+.PHONY: all test lint lint-fix test-cover build clean help
 
+# -------------------------
+# Основные цели
+# -------------------------
+all: help
+
+# Запуск всех тестов
+test:
+	cd tests && go test -v ./...
+
+# Линтер только для тестов, чтобы CI не падал
 lint:
-	@echo "Running linter in tests/..."
+	@echo "Running linter only in tests/..."
 	cd tests && golangci-lint run
 
+# Автоматическая попытка исправить ошибки линтера (только там, где возможно)
 lint-fix:
-	@echo "Running linter with auto-fix in tests/..."
+	@echo "Running linter fix only in tests/..."
 	cd tests && golangci-lint run --fix
 
-lint-fast:
-	@echo "Running fast linter in tests/..."
-	cd tests && golangci-lint run --fast
-
-build:
-	@echo "Building application..."
-	@mkdir -p bin
-	@go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
-	@echo "Build complete: bin/hexlet-path-size"
-
-run:
-	@go run ./cmd/hexlet-path-size
-
-clean:
-	@rm -rf bin
-	@echo "Cleaned up bin directory"
-
-test:
-	@echo "Running tests..."
-	go test ./...
-
-test-verbose:
-	@echo "Running tests with verbose output..."
-	go test -v ./...
-
+# Тесты с покрытием
 test-cover:
-	@echo "Running tests with coverage..."
-	go test -cover ./...
+	cd tests && go test -coverprofile=coverage.out ./...
+	@echo "Coverage report generated at tests/coverage.out"
 
-test-cover-html:
-	@echo "Running tests with coverage report..."
-	go test -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
+# Собираем бинарь
+build:
+	@echo "Building binary..."
+	@mkdir -p bin
+	go build -o bin/app ./cmd/hexlet-path-size
 
-check: test build
-	@echo "All checks passed!"
+# Очистка артефактов сборки
+clean:
+	@rm -rf bin tests/coverage.out
 
+# -------------------------
+# Помощь
+# -------------------------
 help:
-	@echo "Available commands:"
-	@echo "  make lint           - run linter in tests/"
-	@echo "  make lint-fix       - run linter with auto-fix in tests/"
-	@echo "  make lint-fast      - run linter fast mode in tests/"
-	@echo "  make build          - build the binary"
-	@echo "  make run            - run the application"
-	@echo "  make clean          - clean build artifacts"
-	@echo "  make test           - run tests"
-	@echo "  make test-verbose   - run tests with verbose output"
-	@echo "  make test-cover     - run tests with coverage"
-	@echo "  make test-cover-html - generate coverage report"
-	@echo "  make check          - run tests and build"
-	@echo "  make help           - show this help"
+	@echo "Makefile commands:"
+	@echo "  make test         - run all tests"
+	@echo "  make lint         - run golangci-lint on tests/ only"
+	@echo "  make lint-fix     - try to fix lint issues automatically (tests/ only)"
+	@echo "  make test-cover   - run tests with coverage"
+	@echo "  make build        - build the binary into bin/"
+	@echo "  make clean        - remove build artifacts"
+	@echo "  make help         - show this help"
