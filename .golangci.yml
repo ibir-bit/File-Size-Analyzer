@@ -3,7 +3,6 @@ linters:
     - govet
     - errcheck
     - staticcheck
-    - gosimple
     - ineffassign
     - unused
 
