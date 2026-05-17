@@ -1,58 +1,52 @@
 .PHONY: lint lint-fix lint-fast build run clean test test-verbose test-cover test-cover-html check help
 
-# Lint
+# Линтер для golangci-lint v1
 lint:
-	golangci-lint run --config ./golangci.yml
+	@golangci-lint run --timeout=5m
 
 lint-fix:
-	golangci-lint run --fix --config ./golangci.yml
+	@golangci-lint run --fix --timeout=5m
 
 lint-fast:
-	golangci-lint run --fast --config ./golangci.yml
+	@golangci-lint run --fast --timeout=5m
 
-# Build
 build:
 	@echo "Building application..."
 	@mkdir -p bin
 	@go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
 	@echo "Build complete: bin/hexlet-path-size"
 
-# Run
 run:
 	@go run ./cmd/hexlet-path-size
 
-# Clean
 clean:
 	@rm -rf bin
 	@echo "Cleaned up bin directory"
 
-# Tests
 test:
 	@echo "Running tests..."
-	go test ./...
+	@go test ./...
 
 test-verbose:
 	@echo "Running tests with verbose output..."
-	go test -v ./...
+	@go test -v ./...
 
 test-cover:
 	@echo "Running tests with coverage..."
-	go test -cover ./...
+	@go test -cover ./...
 
 test-cover-html:
 	@echo "Running tests with coverage report..."
-	go test -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
+	@go test -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
-# Check
 check: test build
 	@echo "All checks passed!"
 
-# Help
 help:
 	@echo "Available commands:"
-	@echo "  make lint           - run linter"
+	@echo "  make lint           - run linter (golangci-lint v1)"
 	@echo "  make lint-fix       - run linter with auto-fix"
 	@echo "  make lint-fast      - run linter fast mode"
 	@echo "  make build          - build the binary"

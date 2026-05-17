@@ -1,5 +1,5 @@
-# golangci.yml
 version: 1
+
 linters:
   enable:
     - govet
@@ -10,4 +10,8 @@ linters:
 
 run:
   timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+  skip-dirs:
+    - vendor
   go: "1.24"
