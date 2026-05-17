@@ -14,7 +14,8 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 		return "", err
 	}
 
-	return formatSize(size, human), nil
+	formatted := formatSize(size, human)
+	return fmt.Sprintf("%s\t%s\n", formatted, path), nil
 }
 
 func getSize(path string, recursive, showAll bool) (int64, error) {
@@ -29,9 +30,11 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 			if err != nil {
 				return 0, err
 			}
+			if !filepath.IsAbs(target) {
+				target = filepath.Join(filepath.Dir(path), target)
+			}
 			return getSize(target, recursive, showAll)
 		}
-
 		return fi.Size(), nil
 	}
 
@@ -60,6 +63,9 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 				if err != nil {
 					return 0, err
 				}
+				if !filepath.IsAbs(target) {
+					target = filepath.Join(filepath.Dir(fullPath), target)
+				}
 
 				targetFi, err := os.Stat(target)
 				if err != nil {
@@ -77,7 +83,6 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 			if err != nil {
 				return 0, err
 			}
-
 			total += subSize
 		}
 	}
