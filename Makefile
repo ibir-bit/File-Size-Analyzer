@@ -1,22 +1,18 @@
 .PHONY: all test lint lint-fix test-cover build clean help
 
-# -------------------------
-# Основные цели
-# -------------------------
 all: help
 
-# Запуск всех тестов
 test:
 	cd tests && go test -v ./...
 
-# Линтер только для тестов, чтобы CI не падал
+# Линтер только в tests/ — CI не падает
 lint:
-	@echo "Running linter only in tests/..."
+	@echo "Running golangci-lint only in tests/..."
 	cd tests && golangci-lint run
 
-# Автоматическая попытка исправить ошибки линтера (только там, где возможно)
+# Попытка исправить линт-ошибки
 lint-fix:
-	@echo "Running linter fix only in tests/..."
+	@echo "Running golangci-lint fix only in tests/..."
 	cd tests && golangci-lint run --fix
 
 # Тесты с покрытием
@@ -30,13 +26,9 @@ build:
 	@mkdir -p bin
 	go build -o bin/app ./cmd/hexlet-path-size
 
-# Очистка артефактов сборки
 clean:
 	@rm -rf bin tests/coverage.out
 
-# -------------------------
-# Помощь
-# -------------------------
 help:
 	@echo "Makefile commands:"
 	@echo "  make test         - run all tests"
