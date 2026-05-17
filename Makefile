@@ -1,27 +1,32 @@
 .PHONY: lint lint-fix lint-fast build run clean test test-verbose test-cover test-cover-html check help
 
+# Lint
 lint:
-	golangci-lint run
+	golangci-lint run --config ./golangci.yml
 
 lint-fix:
-	golangci-lint run --fix
+	golangci-lint run --fix --config ./golangci.yml
 
 lint-fast:
-	golangci-lint run --fast
+	golangci-lint run --fast --config ./golangci.yml
 
+# Build
 build:
 	@echo "Building application..."
 	@mkdir -p bin
 	@go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
 	@echo "Build complete: bin/hexlet-path-size"
 
+# Run
 run:
 	@go run ./cmd/hexlet-path-size
 
+# Clean
 clean:
 	@rm -rf bin
 	@echo "Cleaned up bin directory"
 
+# Tests
 test:
 	@echo "Running tests..."
 	go test ./...
@@ -40,9 +45,11 @@ test-cover-html:
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
+# Check
 check: test build
 	@echo "All checks passed!"
 
+# Help
 help:
 	@echo "Available commands:"
 	@echo "  make lint           - run linter"
