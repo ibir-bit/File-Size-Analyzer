@@ -4,18 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
-func GetPathSize(path string, recursive, human, all bool) (string, error) {
-	size, err := getSize(path, recursive, all)
-	if err != nil {
-		return "", err
-	}
-
-	formatted := formatSize(size, human)
-	return fmt.Sprintf("%s\t%s", formatted, path), nil
+func GetPathSize(path string, recursive, all bool) (int64, error) {
+	return getSize(path, recursive, all)
 }
 
 func getSize(path string, recursive, showAll bool) (int64, error) {
@@ -44,7 +37,6 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 	}
 
 	var total int64
-
 	for _, file := range files {
 		if !showAll && strings.HasPrefix(file.Name(), ".") {
 			continue
@@ -55,13 +47,13 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 		if !file.IsDir() {
 			newfi, err := os.Lstat(fullPath)
 			if err != nil {
-				return 0, err
+				continue
 			}
 
 			if newfi.Mode()&os.ModeSymlink != 0 {
 				target, err := os.Readlink(fullPath)
 				if err != nil {
-					return 0, err
+					continue
 				}
 				if !filepath.IsAbs(target) {
 					target = filepath.Join(filepath.Dir(fullPath), target)
@@ -69,7 +61,7 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 
 				targetFi, err := os.Stat(target)
 				if err != nil {
-					return 0, err
+					continue
 				}
 
 				if !targetFi.IsDir() {
@@ -81,7 +73,7 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 		} else if recursive {
 			subSize, err := getSize(fullPath, recursive, showAll)
 			if err != nil {
-				return 0, err
+				continue
 			}
 			total += subSize
 		}
@@ -90,9 +82,9 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 	return total, nil
 }
 
-func formatSize(size int64, human bool) string {
+func FormatSize(size int64, human bool) string {
 	if !human {
-		return strconv.FormatInt(size, 10) + "B"
+		return fmt.Sprintf("%dB", size)
 	}
 
 	const (
@@ -112,6 +104,6 @@ func formatSize(size int64, human bool) string {
 	case size >= KB:
 		return fmt.Sprintf("%.1fKB", float64(size)/KB)
 	default:
-		return strconv.FormatInt(size, 10) + "B"
+		return fmt.Sprintf("%dB", size)
 	}
 }

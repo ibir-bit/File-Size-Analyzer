@@ -1,9 +1,10 @@
 package main
 
 import (
-	"code"
 	"fmt"
 	"os"
+
+	"code"
 
 	"github.com/urfave/cli/v2"
 )
@@ -39,9 +40,16 @@ func main() {
 			human := c.Bool("human")
 			all := c.Bool("all")
 
-			result, err := code.GetPathSize(path, recursive, human, all)
+			size, err := code.GetPathSize(path, recursive, all)
 			if err != nil {
 				return err
+			}
+
+			var result string
+			if human {
+				result = code.FormatSize(size, true) + "\t" + path
+			} else {
+				result = fmt.Sprintf("%dB\t%s", size, path)
 			}
 
 			fmt.Println(result)
