@@ -39,17 +39,10 @@ func main() {
 			recursive := c.Bool("recursive")
 			human := c.Bool("human")
 			all := c.Bool("all")
-
-			size, err := code.GetPathSize(path, recursive, all)
+			result, err := code.GetPathSize(path, recursive, human, all)
 			if err != nil {
-				return err
-			}
-
-			var result string
-			if human {
-				result = code.FormatSize(size, true) + "\t" + path
-			} else {
-				result = fmt.Sprintf("%dB\t%s", size, path)
+				fmt.Fprintf(os.Stderr, "Ошибка: %v\n", err)
+				os.Exit(1)
 			}
 
 			fmt.Println(result)
@@ -59,7 +52,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Ошибка: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Ошибка запуска приложения: %v\n", err)
 		os.Exit(1)
 	}
 }

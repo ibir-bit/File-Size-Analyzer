@@ -4,14 +4,19 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
-func GetPathSize(path string, recursive, all bool) (int64, error) {
-	return getSize(path, recursive, all)
+func GetPathSize(path string, recursive, human, all bool) (string, error) {
+	size, err := getSize(path, all, recursive)
+	if err != nil {
+		return "", err
+	}
+	return formatSize(size, human), nil
 }
 
-func getSize(path string, recursive, showAll bool) (int64, error) {
+func getSize(path string, showAll, recursive bool) (int64, error) {
 	fi, err := os.Lstat(path)
 	if err != nil {
 		return 0, err
@@ -26,7 +31,7 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 			if !filepath.IsAbs(target) {
 				target = filepath.Join(filepath.Dir(path), target)
 			}
-			return getSize(target, recursive, showAll)
+			return getSize(target, showAll, recursive)
 		}
 		return fi.Size(), nil
 	}
@@ -47,12 +52,14 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 		if !file.IsDir() {
 			newfi, err := os.Lstat(fullPath)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "Ошибка при обработке %s: %v\n", fullPath, err)
 				continue
 			}
 
 			if newfi.Mode()&os.ModeSymlink != 0 {
 				target, err := os.Readlink(fullPath)
 				if err != nil {
+					fmt.Fprintf(os.Stderr, "Ошибка чтения симлинка %s: %v\n", fullPath, err)
 					continue
 				}
 				if !filepath.IsAbs(target) {
@@ -61,6 +68,7 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 
 				targetFi, err := os.Stat(target)
 				if err != nil {
+					fmt.Fprintf(os.Stderr, "Ошибка доступа к цели симлинка %s: %v\n", target, err)
 					continue
 				}
 
@@ -71,8 +79,9 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 				total += newfi.Size()
 			}
 		} else if recursive {
-			subSize, err := getSize(fullPath, recursive, showAll)
+			subSize, err := getSize(fullPath, showAll, recursive)
 			if err != nil {
+				fmt.Fprintf(os.Stderr, "Ошибка при обходе %s: %v\n", fullPath, err)
 				continue
 			}
 			total += subSize
@@ -82,9 +91,9 @@ func getSize(path string, recursive, showAll bool) (int64, error) {
 	return total, nil
 }
 
-func FormatSize(size int64, human bool) string {
+func formatSize(size int64, human bool) string {
 	if !human {
-		return fmt.Sprintf("%dB", size)
+		return strconv.FormatInt(size, 10) + "B"
 	}
 
 	const (
@@ -104,6 +113,6 @@ func FormatSize(size int64, human bool) string {
 	case size >= KB:
 		return fmt.Sprintf("%.1fKB", float64(size)/KB)
 	default:
-		return fmt.Sprintf("%dB", size)
+		return strconv.FormatInt(size, 10) + "B"
 	}
 }
