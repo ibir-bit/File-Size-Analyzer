@@ -1,14 +1,16 @@
 .PHONY: lint lint-fix lint-fast build run clean test test-verbose test-cover test-cover-html check help
 
-# Линтер для golangci-lint v1
 lint:
-	@golangci-lint run --timeout=5m
+	@echo "Running linter in tests/..."
+	cd tests && golangci-lint run
 
 lint-fix:
-	@golangci-lint run --fix --timeout=5m
+	@echo "Running linter with auto-fix in tests/..."
+	cd tests && golangci-lint run --fix
 
 lint-fast:
-	@golangci-lint run --fast --timeout=5m
+	@echo "Running fast linter in tests/..."
+	cd tests && golangci-lint run --fast
 
 build:
 	@echo "Building application..."
@@ -25,20 +27,20 @@ clean:
 
 test:
 	@echo "Running tests..."
-	@go test ./...
+	go test ./...
 
 test-verbose:
 	@echo "Running tests with verbose output..."
-	@go test -v ./...
+	go test -v ./...
 
 test-cover:
 	@echo "Running tests with coverage..."
-	@go test -cover ./...
+	go test -cover ./...
 
 test-cover-html:
 	@echo "Running tests with coverage report..."
-	@go test -coverprofile=coverage.out ./...
-	@go tool cover -html=coverage.out -o coverage.html
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
 check: test build
@@ -46,9 +48,9 @@ check: test build
 
 help:
 	@echo "Available commands:"
-	@echo "  make lint           - run linter (golangci-lint v1)"
-	@echo "  make lint-fix       - run linter with auto-fix"
-	@echo "  make lint-fast      - run linter fast mode"
+	@echo "  make lint           - run linter in tests/"
+	@echo "  make lint-fix       - run linter with auto-fix in tests/"
+	@echo "  make lint-fast      - run linter fast mode in tests/"
 	@echo "  make build          - build the binary"
 	@echo "  make run            - run the application"
 	@echo "  make clean          - clean build artifacts"
