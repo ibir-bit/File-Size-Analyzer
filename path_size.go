@@ -9,33 +9,39 @@ import (
 )
 
 func GetPathSize(path string, recursive, human, all bool) (string, error) {
-	size, _ := getSize(path, all, recursive)
+	size, err := getSize(path, recursive, all)
+	if err != nil {
+		return "", err
+	}
+
 	return formatSize(size, human), nil
 }
 
-func getSize(path string, showAll bool, recursive bool) (int64, string) {
+func getSize(path string, recursive, showAll bool) (int64, error) {
 	fi, err := os.Lstat(path)
 	if err != nil {
-		return 0, path
+		return 0, err
 	}
 
 	if !fi.IsDir() {
 		if fi.Mode()&os.ModeSymlink != 0 {
 			target, err := os.Readlink(path)
 			if err != nil {
-				return 0, path
+				return 0, err
 			}
-			return getSize(target, showAll, recursive)
+			return getSize(target, recursive, showAll)
 		}
-		return fi.Size(), path
+
+		return fi.Size(), nil
 	}
 
 	files, err := os.ReadDir(path)
 	if err != nil {
-		return 0, path
+		return 0, err
 	}
 
 	var total int64
+
 	for _, file := range files {
 		if !showAll && strings.HasPrefix(file.Name(), ".") {
 			continue
@@ -46,40 +52,44 @@ func getSize(path string, showAll bool, recursive bool) (int64, string) {
 		if !file.IsDir() {
 			newfi, err := os.Lstat(fullPath)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Ошибка при обработке %s: %v\n", fullPath, err)
-				continue
+				return 0, err
 			}
 
 			if newfi.Mode()&os.ModeSymlink != 0 {
 				target, err := os.Readlink(fullPath)
 				if err != nil {
-					continue
+					return 0, err
 				}
+
 				targetFi, err := os.Stat(target)
 				if err != nil {
-					continue
+					return 0, err
 				}
+
 				if !targetFi.IsDir() {
 					total += targetFi.Size()
 				}
 			} else {
 				total += newfi.Size()
 			}
-		} else {
-			if recursive {
-				subSize, _ := getSize(fullPath, showAll, recursive)
-				total += subSize
+		} else if recursive {
+			subSize, err := getSize(fullPath, recursive, showAll)
+			if err != nil {
+				return 0, err
 			}
+
+			total += subSize
 		}
 	}
 
-	return total, path
+	return total, nil
 }
 
 func formatSize(size int64, human bool) string {
 	if !human {
 		return strconv.FormatInt(size, 10) + "B"
 	}
+
 	const (
 		KB = 1024
 		MB = KB * 1024
