@@ -8,7 +8,4 @@ linters:
 
 run:
   timeout: 5m
-  go: '1.24'
-
-issues:
-  exclude-use-default: false
+  go: "1.24"
